@@ -1,79 +1,77 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateExerciseDto } from './dto/create-exercise.dto';
 import { UpdateExerciseDto } from './dto/update-exercise.dto';
-import { ExercisesStore } from './exercises.store';
-import { Exercise } from './interfaces/exercise.interface';
+import { Exercise } from './entities';
 
 @Injectable()
 export class ExercisesService {
-  constructor(private readonly store: ExercisesStore) {}
+  constructor(
+    @InjectRepository(Exercise)
+    private readonly exercisesRepository: Repository<Exercise>,
+  ) {}
 
-  create(createExerciseDto: CreateExerciseDto): Exercise {
-    const exercise: Exercise = {
-      id: this.store.nextId++,
-      name: createExerciseDto.name,
-      weight: createExerciseDto.weight,
-      reps: createExerciseDto.reps,
-      date: this.parseDate(createExerciseDto.date),
-    };
+  async create(dto: CreateExerciseDto): Promise<Exercise> {
+    this.assertValidIsoDate(dto.date);
 
-    this.store.exercises.push(exercise);
-    return exercise;
+    const exercise = this.exercisesRepository.create({
+      name: dto.name,
+      weight: dto.weight,
+      reps: dto.reps,
+      date: dto.date,
+    });
+
+    return this.exercisesRepository.save(exercise);
   }
 
-  findAll(): Exercise[] {
-    return [...this.store.exercises];
+  findAll(): Promise<Exercise[]> {
+    return this.exercisesRepository.find({ order: { id: 'ASC' } });
   }
 
-  findOne(id: number): Exercise {
-    const exercise = this.store.exercises.find((item) => item.id === id);
+  async findOne(id: number): Promise<Exercise> {
+    const exercise = await this.exercisesRepository.findOneBy({ id });
 
     if (!exercise) {
-      throw new NotFoundException(`Exercise with id ${id} not found`);
+      this.throwNotFound(id);
     }
 
     return exercise;
   }
 
-  update(id: number, updateExerciseDto: UpdateExerciseDto): Exercise {
-    const exercise = this.findOne(id);
+  async update(id: number, dto: UpdateExerciseDto): Promise<Exercise> {
+    const exercise = await this.findOne(id);
 
-    if (updateExerciseDto.name !== undefined) {
-      exercise.name = updateExerciseDto.name;
+    if (dto.date !== undefined) {
+      this.assertValidIsoDate(dto.date);
     }
 
-    if (updateExerciseDto.weight !== undefined) {
-      exercise.weight = updateExerciseDto.weight;
-    }
+    const patch = Object.fromEntries(
+      Object.entries(dto).filter(([, value]) => value !== undefined),
+    ) as Partial<Pick<Exercise, 'name' | 'weight' | 'reps' | 'date'>>;
 
-    if (updateExerciseDto.reps !== undefined) {
-      exercise.reps = updateExerciseDto.reps;
-    }
+    Object.assign(exercise, patch);
 
-    if (updateExerciseDto.date !== undefined) {
-      exercise.date = this.parseDate(updateExerciseDto.date);
-    }
-
-    return exercise;
+    return this.exercisesRepository.save(exercise);
   }
 
-  remove(id: number): void {
-    const exerciseIndex = this.store.exercises.findIndex((item) => item.id === id);
+  async remove(id: number): Promise<void> {
+    const result = await this.exercisesRepository.delete(id);
 
-    if (exerciseIndex === -1) {
-      throw new NotFoundException(`Exercise with id ${id} not found`);
+    if (!result.affected) {
+      this.throwNotFound(id);
     }
-
-    this.store.exercises.splice(exerciseIndex, 1);
   }
 
-  private parseDate(value: string): Date {
-    const parsedDate = new Date(value);
+  private throwNotFound(id: number): never {
+    throw new NotFoundException(`Exercise with id ${id} not found`);
+  }
 
-    if (Number.isNaN(parsedDate.getTime())) {
-      throw new BadRequestException('Invalid date value. Use a valid date.');
+  private assertValidIsoDate(value: string): void {
+    const parsed = new Date(value);
+
+    if (Number.isNaN(parsed.getTime())) {
+      throw new BadRequestException('Invalid date value. Use a valid ISO date string.');
     }
-
-    return parsedDate;
   }
 }

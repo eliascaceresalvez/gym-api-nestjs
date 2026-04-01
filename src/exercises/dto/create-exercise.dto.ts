@@ -1,18 +1,31 @@
-import { IsString, IsNotEmpty, IsNumber, IsPositive, IsDateString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsDateString,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  IsString,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class CreateExerciseDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(255)
   name: string;
 
-  @IsNumber()
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false, maxDecimalPlaces: 2 })
   @IsPositive()
   weight: number;
 
-  @IsNumber()
-  @IsPositive()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   reps: number;
 
-  @IsDateString()
+  @IsDateString({ strict: true })
   date: string;
 }
