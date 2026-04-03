@@ -28,4 +28,9 @@ export class CreateExerciseDto {
 
   @IsDateString({ strict: true })
   date: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  userId: number;
 }

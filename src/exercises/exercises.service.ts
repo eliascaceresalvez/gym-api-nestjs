@@ -4,29 +4,49 @@ import { Repository } from 'typeorm';
 import { CreateExerciseDto } from './dto/create-exercise.dto';
 import { UpdateExerciseDto } from './dto/update-exercise.dto';
 import { Exercise } from './entities';
+import { User } from '../users/entities';
 
 @Injectable()
 export class ExercisesService {
   constructor(
     @InjectRepository(Exercise)
     private readonly exercisesRepository: Repository<Exercise>,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
   ) {}
 
   async create(dto: CreateExerciseDto): Promise<Exercise> {
     this.assertValidIsoDate(dto.date);
+
+    const user = await this.usersRepository.findOneBy({ id: dto.userId });
+    if (!user) {
+      throw new NotFoundException(`User with id ${dto.userId} not found`);
+    }
 
     const exercise = this.exercisesRepository.create({
       name: dto.name,
       weight: dto.weight,
       reps: dto.reps,
       date: dto.date,
+      user,
     });
 
     return this.exercisesRepository.save(exercise);
   }
 
   findAll(): Promise<Exercise[]> {
-    return this.exercisesRepository.find({ order: { id: 'ASC' } });
+    return this.exercisesRepository.find({ 
+      relations: ['user'],
+      order: { id: 'ASC' },
+    });
+  }
+
+  findAllByUser(userId: number): Promise<Exercise[]> {
+    return this.exercisesRepository.find({
+      where: { user: { id: userId } },
+      relations: ['user'],
+      order: { id: 'ASC' },
+    });
   }
 
   async findOne(id: number): Promise<Exercise> {

@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, UseGuards, Request } from '@nestjs/common';
 import { CreateExerciseDto } from './dto/create-exercise.dto';
 import { UpdateExerciseDto } from './dto/update-exercise.dto';
 import { Exercise } from './entities';
 import { ExercisesService } from './exercises.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('exercises')
 export class ExercisesController {
@@ -13,9 +14,10 @@ export class ExercisesController {
     return this.exercisesService.create(createExerciseDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll(): Promise<Exercise[]> {
-    return this.exercisesService.findAll();
+  findAll(@Request() req): Promise<Exercise[]> {
+    return this.exercisesService.findAllByUser(req.user.id);
   }
 
   @Get(':id')

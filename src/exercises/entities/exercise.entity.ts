@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 @Entity()
 export class Exercise {
@@ -17,4 +18,8 @@ export class Exercise {
   /** ISO 8601 date string (e.g. 2026-03-26) */
   @Column()
   date: string;
+
+  @ManyToOne(() => User, (user) => user.exercises, { onDelete: 'CASCADE' })
+  @JoinColumn()
+  user: User;
 }
