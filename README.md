@@ -25,7 +25,7 @@ Una API REST moderna para gestionar ejercicios de gimnasio, construida con NestJ
 
 1. **Clona el repositorio**
    ```bash
-   git clone <repository-url>
+   git clone <https://github.com/eliascaceresalvez/gym-api-nestjs.git>
    cd gym-api
    ```
 
