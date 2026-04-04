@@ -1,6 +1,8 @@
 # 🏋️ Gym API
 
-Una API REST moderna para gestionar ejercicios de gimnasio, construida con NestJS. Incluye autenticación JWT multi-usuario, validación de datos y persistencia con TypeORM y SQLite.
+## 📌 Descripción
+
+API REST para gestión de ejercicios de gimnasio con autenticación JWT y soporte multi-usuario. Permite a cada usuario crear, consultar, actualizar y eliminar sus propios ejercicios de forma segura.
 
 ## ✨ Características
 
@@ -10,6 +12,14 @@ Una API REST moderna para gestionar ejercicios de gimnasio, construida con NestJ
 - 🗄️ Base de datos SQLite con TypeORM
 - 🔒 Endpoints protegidos con guards
 - 📝 Documentación clara y ejemplos de uso
+- 👥 Multi-usuario: cada usuario solo puede acceder a sus propios ejercicios
+
+## 🔑 Autenticación
+
+Esta API utiliza JWT (JSON Web Tokens).  
+Después del login, debes incluir el token en el header:
+
+Authorization: Bearer YOUR_TOKEN
 
 ## 🚀 Tecnologías
 
@@ -25,8 +35,8 @@ Una API REST moderna para gestionar ejercicios de gimnasio, construida con NestJ
 
 1. **Clona el repositorio**
    ```bash
-   git clone <repository-url>
-   cd gym-api
+   git clone <https://github.com/eliascaceresalvez/gym-api-nestjs.git>
+   cd gym-api-nestjs
    ```
 
 2. **Instala las dependencias**
@@ -101,7 +111,7 @@ Todos los endpoints de ejercicios requieren autenticación JWT (Bearer token en 
 #### Crear ejercicio
 ```http
 POST /exercises
-Authorization: Bearer <your-jwt-token>
+Authorization: Bearer YOUR_TOKEN
 Content-Type: application/json
 
 {
@@ -114,8 +124,8 @@ Content-Type: application/json
 
 #### Obtener ejercicios del usuario
 ```http
-GET /exercises
-Authorization: Bearer <your-jwt-token>
+GET /auth/profile
+Authorization: Bearer YOUR_TOKEN
 ```
 
 **Respuesta:**
@@ -139,7 +149,7 @@ Authorization: Bearer <your-jwt-token>
 #### Actualizar ejercicio
 ```http
 PATCH /exercises/1
-Authorization: Bearer <your-jwt-token>
+Authorization: Bearer YOUR_TOKEN
 Content-Type: application/json
 
 {
@@ -151,12 +161,12 @@ Content-Type: application/json
 #### Eliminar ejercicio
 ```http
 DELETE /exercises/1
-Authorization: Bearer <your-jwt-token>
+Authorization: Bearer YOUR_TOKEN
 ```
 
 ## 🧪 Ejemplo de uso completo
 
-1. **Registrar usuario** (asumiendo que tienes un endpoint POST /users)
+1. **Registrar usuario** (endpoint POST /users o pre-creado en base de datos)
 2. **Login para obtener token**
 3. **Crear ejercicio con el token**
 4. **Obtener lista de ejercicios**
