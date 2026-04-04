@@ -1,25 +1,33 @@
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
 @Entity()
 export class Exercise {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column('float')
-  weight: number;
+  weight!: number;
 
   @Column('int')
-  reps: number;
+  reps!: number;
 
-  /** ISO 8601 date string (e.g. 2026-03-26) */
+  @Column('int')
+  sets!: number;
+
   @Column()
-  date: string;
+  date!: string;
 
   @ManyToOne(() => User, (user) => user.exercises, { onDelete: 'CASCADE' })
   @JoinColumn()
-  user: User;
+  user!: User;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }

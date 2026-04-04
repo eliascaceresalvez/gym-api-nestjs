@@ -14,23 +14,28 @@ export class CreateExerciseDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
-  name: string;
+  name!: string;
 
   @Type(() => Number)
   @IsNumber({ allowNaN: false, allowInfinity: false, maxDecimalPlaces: 2 })
   @IsPositive()
-  weight: number;
-
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  reps: number;
-
-  @IsDateString({ strict: true })
-  date: string;
+  weight!: number;
 
   @Type(() => Number)
   @IsInt()
   @IsPositive()
-  userId: number;
+  reps!: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  sets!: number;
+
+  @IsDateString({ strict: true })
+  date!: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  userId!: number;
 }

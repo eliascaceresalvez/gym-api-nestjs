@@ -4,44 +4,30 @@ import { Repository } from 'typeorm';
 import { CreateExerciseDto } from './dto/create-exercise.dto';
 import { UpdateExerciseDto } from './dto/update-exercise.dto';
 import { Exercise } from './entities';
-import { User } from '../users/entities';
 
 @Injectable()
 export class ExercisesService {
   constructor(
     @InjectRepository(Exercise)
     private readonly exercisesRepository: Repository<Exercise>,
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
   ) {}
 
-  async create(dto: CreateExerciseDto): Promise<Exercise> {
-    this.assertValidIsoDate(dto.date);
-
-    const user = await this.usersRepository.findOneBy({ id: dto.userId });
-    if (!user) {
-      throw new NotFoundException(`User with id ${dto.userId} not found`);
-    }
+  async create(createExerciseDto: CreateExerciseDto): Promise<Exercise> {
+    this.assertValidIsoDate(createExerciseDto.date);
 
     const exercise = this.exercisesRepository.create({
-      name: dto.name,
-      weight: dto.weight,
-      reps: dto.reps,
-      date: dto.date,
-      user,
+      name: createExerciseDto.name,
+      weight: createExerciseDto.weight,
+      reps: createExerciseDto.reps,
+      sets: createExerciseDto.sets,
+      date: createExerciseDto.date,
+      user: { id: createExerciseDto.userId },
     });
 
     return this.exercisesRepository.save(exercise);
   }
 
-  findAll(): Promise<Exercise[]> {
-    return this.exercisesRepository.find({ 
-      relations: ['user'],
-      order: { id: 'ASC' },
-    });
-  }
-
-  findAllByUser(userId: number): Promise<Exercise[]> {
+  findAll(userId: number): Promise<Exercise[]> {
     return this.exercisesRepository.find({
       where: { user: { id: userId } },
       relations: ['user'],
@@ -59,18 +45,29 @@ export class ExercisesService {
     return exercise;
   }
 
-  async update(id: number, dto: UpdateExerciseDto): Promise<Exercise> {
-    const exercise = await this.findOne(id);
+  async update(id: number, userId: number, updateExerciseDto: UpdateExerciseDto): Promise<Exercise> {
+    const exercise = await this.exercisesRepository.findOne({
+      where: { id, user: { id: userId } },
+    });
 
-    if (dto.date !== undefined) {
-      this.assertValidIsoDate(dto.date);
+    if (!exercise) {
+      throw new NotFoundException(`Exercise with id ${id} not found`);
     }
 
-    const patch = Object.fromEntries(
-      Object.entries(dto).filter(([, value]) => value !== undefined),
-    ) as Partial<Pick<Exercise, 'name' | 'weight' | 'reps' | 'date'>>;
+    if (updateExerciseDto.date !== undefined) {
+      this.assertValidIsoDate(updateExerciseDto.date);
+    }
 
-    Object.assign(exercise, patch);
+    const allowedFields: (keyof Exercise)[] = ['name', 'weight', 'reps', 'sets', 'date'];
+    const updateData: Partial<Exercise> = {};
+
+    for (const field of allowedFields) {
+      if (updateExerciseDto[field] !== undefined) {
+        updateData[field] = updateExerciseDto[field] as any;
+      }
+    }
+
+    Object.assign(exercise, updateData);
 
     return this.exercisesRepository.save(exercise);
   }

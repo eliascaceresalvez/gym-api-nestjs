@@ -27,8 +27,14 @@ export class UpdateExerciseDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  @Min(1)
+  @IsPositive()
   reps?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  sets?: number;
 
   @IsOptional()
   @IsDateString({ strict: true })
