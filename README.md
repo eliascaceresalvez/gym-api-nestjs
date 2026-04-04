@@ -35,8 +35,8 @@ Authorization: Bearer YOUR_TOKEN
 
 1. **Clona el repositorio**
    ```bash
-   git clone <repository-url>
-   cd gym-api
+   git clone <https://github.com/eliascaceresalvez/gym-api-nestjs>
+   cd gym-api-nestjs
    ```
 
 2. **Instala las dependencias**
